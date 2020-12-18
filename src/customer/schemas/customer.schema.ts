@@ -5,10 +5,13 @@ export type CustomerDocument = Customer & Document;
 
 @Schema({ collection: 'customer' })
 export class Customer {
-  @Prop({ required: true })
+  @Prop()
+  id: string;
+
+  @Prop()
   code: string;
 
-  @Prop({ required: true })
+  @Prop()
   name: string;
 }
 

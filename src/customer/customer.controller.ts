@@ -1,19 +1,47 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { stringify } from 'querystring';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
+import { UpdateCustomerDto } from './dto/update-customer.dto';
 
 @Controller('customer')
 export class CustomerController {
   constructor(private customerService: CustomerService) {}
 
   @Get()
-  getAllCustomer() {
+  findAllCustomer() {
     return this.customerService.findAll();
+  }
+
+  @Get(':id')
+  findByIdCustomer(@Param('id') id: string) {
+    return this.customerService.getById(id);
   }
 
   @Post()
   createCustomer(@Body() createCustomerDto: CreateCustomerDto) {
     return this.customerService.create(createCustomerDto);
+  }
+
+  @Patch(':id')
+  updateCustomer(
+    @Param('id') id: string,
+    @Body() updateCustomerDto: UpdateCustomerDto,
+  ) {
+    return this.customerService.update(id, updateCustomerDto);
+  }
+
+  @Delete(':id')
+  async deleteCustomer(@Param('id') id: string) {
+    await this.customerService.delete(id);
+
+    return null;
   }
 }
