@@ -71,7 +71,10 @@ export class CustomerService {
 
   async delete(id: string) {
     try {
-      await this.customerModel.findByIdAndDelete(id).exec();
+      const result = await this.customerModel.findByIdAndDelete(id);
+      if (result == null) {
+        throw new NotFoundException('Could not delete Customer.');
+      }
     } catch (error) {
       throw new NotFoundException('Could not delete Customer.');
     }
