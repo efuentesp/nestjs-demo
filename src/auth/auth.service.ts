@@ -1,16 +1,21 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
 import { LoginCredentialsDto } from './dto/login-credentials.dto';
-import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
+  private logger = new Logger('AuthService');
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private jwtService: JwtService,
@@ -22,10 +27,12 @@ export class AuthService {
     try {
       user = await this.userModel.findOne({ username }).exec();
     } catch (error) {
+      this.logger.error(`Failed to get user "${username}."`);
       throw new UnauthorizedException('Invalid Auth Credentials.');
     }
 
     if (!user) {
+      this.logger.error(`Failed to get user "${username}."`);
       throw new UnauthorizedException('Invalid Auth Credentials.');
     }
 
@@ -41,6 +48,11 @@ export class AuthService {
       user.password === (await this.hashPassword(password, user.salt));
 
     if (!isValid) {
+      this.logger.error(
+        `Failed to logged in user "${username} with credentials: ${JSON.stringify(
+          authCredentialsDto,
+        )}"`,
+      );
       throw new UnauthorizedException('Invalid Auth Credentials.');
     }
 
@@ -59,7 +71,15 @@ export class AuthService {
     createUserDto.salt = salt;
 
     const createdUser = new this.userModel(createUserDto);
-    createdUser.save();
+
+    try {
+      await createdUser.save();
+    } catch (error) {
+      this.logger.error(
+        `Failed to save User: ${JSON.stringify(createUserDto)}"`,
+      );
+      throw new InternalServerErrorException();
+    }
   }
 
   private async hashPassword(password: string, salt: string): Promise<string> {

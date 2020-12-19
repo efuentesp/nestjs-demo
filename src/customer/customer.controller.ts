@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   Param,
   Patch,
   Post,
@@ -10,6 +11,8 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { GetUser } from 'src/auth/passport/get-user.decorator';
+import { User } from 'src/auth/schemas/user.schema';
 import { CustomerService } from './customer.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
@@ -17,6 +20,7 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 @Controller('customer')
 @UseGuards(AuthGuard())
 export class CustomerController {
+  private logger = new Logger('CustomerController');
   constructor(private customerService: CustomerService) {}
 
   @Get()
@@ -30,7 +34,15 @@ export class CustomerController {
   }
 
   @Post()
-  createCustomer(@Body(ValidationPipe) createCustomerDto: CreateCustomerDto) {
+  createCustomer(
+    @Body(ValidationPipe) createCustomerDto: CreateCustomerDto,
+    @GetUser() user: User,
+  ) {
+    this.logger.verbose(
+      `User "${user.username}" created a new Customer ${JSON.stringify(
+        createCustomerDto,
+      )}.`,
+    );
     return this.customerService.create(createCustomerDto);
   }
 

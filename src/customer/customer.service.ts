@@ -1,5 +1,10 @@
 import { Model } from 'mongoose';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Customer, CustomerDocument } from './schemas/customer.schema';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -7,6 +12,7 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 
 @Injectable()
 export class CustomerService {
+  private logger = new Logger('CustomerService');
   constructor(
     @InjectModel(Customer.name) private customerModel: Model<CustomerDocument>,
   ) {}
@@ -46,11 +52,20 @@ export class CustomerService {
   async create(createCustomerDto: CreateCustomerDto): Promise<Customer> {
     const createdCustomer = new this.customerModel(createCustomerDto);
 
-    return createdCustomer.save();
+    try {
+      return createdCustomer.save();
+    } catch (error) {
+      this.logger.error(
+        `Failed to save Customer: ${JSON.stringify(createCustomerDto)}"`,
+        error.stack,
+      );
+      throw new InternalServerErrorException();
+    }
   }
 
   async update(id: string, customer: UpdateCustomerDto): Promise<Customer> {
     const foundCustomer = await this.findById(id);
+    let updatedCustomer;
 
     if (customer.code) {
       foundCustomer.code = customer.code;
@@ -60,7 +75,15 @@ export class CustomerService {
       foundCustomer.name = customer.name;
     }
 
-    const updatedCustomer = await foundCustomer.save();
+    try {
+      updatedCustomer = await foundCustomer.save();
+    } catch (error) {
+      this.logger.error(
+        `Failed to update Customer: ${JSON.stringify(customer)}"`,
+        error.stack,
+      );
+      throw new InternalServerErrorException();
+    }
 
     return {
       id: updatedCustomer._id,
@@ -73,9 +96,11 @@ export class CustomerService {
     try {
       const result = await this.customerModel.findByIdAndDelete(id);
       if (result == null) {
+        this.logger.error(`Failed to delete Customer id: ${id}"`);
         throw new NotFoundException('Could not delete Customer.');
       }
     } catch (error) {
+      this.logger.error(`Failed to delete Customer id: ${id}"`);
       throw new NotFoundException('Could not delete Customer.');
     }
   }
