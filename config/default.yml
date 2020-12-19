@@ -1,0 +1,9 @@
+server:
+  port: 3000
+
+mongodb:
+  uri: 'mongodb+srv://nestjs:nestjs@cluster0.mbur4.mongodb.net/pdash?retryWrites=true&w=majority'
+
+jwt:
+  expiresIn: 3600
+  secret: 'S3cr37'

@@ -6,14 +6,15 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './passport/jwt.strategy';
 import { User, UserSchema } from './schemas/user.schema';
+import * as config from 'config';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     JwtModule.register({
-      secret: 'S3cr37',
+      secret: config.get('jwt').secret,
       signOptions: {
-        expiresIn: 3600,
+        expiresIn: config.get('jwt').expiresIn,
       },
     }),
     PassportModule.register({ defaultStrategy: 'jwt' }),
