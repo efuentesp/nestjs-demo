@@ -7,12 +7,14 @@ import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { User } from '../schemas/user.schema';
 import * as config from 'config';
 
+const jwtConfig = config.get('jwt');
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private authService: AuthService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: config.get('jwt').secret,
+      secretOrKey: jwtConfig.secret,
     });
   }
 

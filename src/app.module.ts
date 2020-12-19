@@ -5,9 +5,12 @@ import { CustomerModule } from './customer/customer.module';
 import { CustomerResolver } from './customer/customer.resolver';
 import { AuthModule } from './auth/auth.module';
 import * as config from 'config';
+
+const mongodbConfig = config.get('mongodb');
+
 @Module({
   imports: [
-    MongooseModule.forRoot(config.get('mongodb').uri, {
+    MongooseModule.forRoot(mongodbConfig.uri, {
       useFindAndModify: false,
     }),
     GraphQLModule.forRoot({ autoSchemaFile: true }),

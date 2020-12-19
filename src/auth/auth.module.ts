@@ -8,13 +8,15 @@ import { JwtStrategy } from './passport/jwt.strategy';
 import { User, UserSchema } from './schemas/user.schema';
 import * as config from 'config';
 
+const jwtConfig = config.get('jwt');
+
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     JwtModule.register({
-      secret: config.get('jwt').secret,
+      secret: jwtConfig.secret,
       signOptions: {
-        expiresIn: config.get('jwt').expiresIn,
+        expiresIn: jwtConfig.expiresIn,
       },
     }),
     PassportModule.register({ defaultStrategy: 'jwt' }),
