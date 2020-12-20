@@ -37,6 +37,7 @@
     "graphql": "^15.4.0",
     "graphql-tools": "^7.0.2",
     "mongodb": "^3.6.3",
+    "mongodb-memory-server": "^6.9.2",
     "mongoose": "^5.11.8",
     "mongoose-unique-validator": "^2.0.3",
     "passport": "^0.4.1",
